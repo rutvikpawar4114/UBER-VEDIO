@@ -5,12 +5,12 @@ const jwt = require('jsonwebtoken');
 const userSchema = new mongoose.Schema({
   fullname: {
     firstname: {
-      type: 'string',
+      type: String,
       required: true,
       minLength: [3, 'First name must have at least 3 characters'],
     },
     lastname: {
-      type: 'string',
+      type: String,
       minLength: [3, 'Last name must have at least 3 characters'],
     },
   },
@@ -24,16 +24,17 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true,
     select: false,
+    minLength: 5,
   },
   socketId: {
     type: String,
+    default: null,
   },
 });
 
 // Instance method to generate JWT token
 userSchema.methods.generateAuthToken = function () {
-  const token = jwt.sign({ _id: this._id }, process.env.JWT_SECRET);
-  return token;
+  return jwt.sign({ _id: this._id }, process.env.JWT_SECRET, { expiresIn: '24h' });
 };
 
 // Instance method to compare password
@@ -46,6 +47,4 @@ userSchema.statics.hashPassword = async function (password) {
   return await bcrypt.hash(password, 10);
 };
 
-const userModel = mongoose.model('user', userSchema);
-
-module.exports = userModel;
+module.exports = mongoose.model('User', userSchema);
