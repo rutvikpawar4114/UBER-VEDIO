@@ -19,6 +19,8 @@ const userSchema = new mongoose.Schema({
     required: true,
     unique: true,
     minLength: [5, 'Email must have at least 5 characters'],
+    lowercase: true,
+    trim: true,
   },
   password: {
     type: String,
@@ -30,6 +32,14 @@ const userSchema = new mongoose.Schema({
     type: String,
     default: null,
   },
+});
+
+// Pre-save hook to hash the password
+userSchema.pre('save', async function (next) {
+  if (this.isModified('password')) {
+    this.password = await bcrypt.hash(this.password, 10);
+  }
+  next();
 });
 
 // Instance method to generate JWT token
